@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration documentatie</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="atom-one-dark.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="titel">Integration project: uplanner</h1>
+
+
+
+        <div class="side-nav">
+            <ul>
+                <li><strong>Registratie user</strong></li>
+                <li><a href="#registratie-stap-1">Stap 1 </a></li>
+                <li><a href="#registratie-stap-2">Stap 2</a></li>
+                <li><a href="#registratie-stap-3">Stap 3</a></li>
+                <li><a href="#activity-registratie">Activity diagram</a></li>
+                <li><strong>Heartbeat</strong></li>
+                <li><a href="#heartbeat">Heartbeat</a></li>
+                <li><strong>Timestamps</strong></li>
+                <li><a href="#timestamps">Timestamps</a></li>
+                <li><strong>Logs</strong></li>
+                <li><a href="#logs">Logs</a></li>
+                <li><strong>XSD validatie scripts</strong></li>
+                <li>Registratie</li>
+                <li><a href="#registratie-xsd-1">Stap 1</a></li>
+                <li><a href="#registratie-xsd-2">Stap 2</a></li>
+                <li><a href="#registratie-xsd-3">Stap 3</a></li>
+                <li>Heartbeat</li>
+                <li><a href="#heartbeat-xsd"> Heartbeat</a></li>
+                <li>Logs</li>
+                <li><a href="#logs-xsd">Logs</a></li>
+
+
+
+
+            </ul>
+        </div>
+
+        <div class="content">
+            <h2>Registratie user</h2>
+            <h6 id="registratie-stap-1">Stap 1: XML message wordt opgesteld bij registratie op de frontend en wordt
+                verstuurd naar de UUID module.</h6>
+            <pre>
+        <code class="hljs xml">
+        &lt;!--Version 2.0--&gt;
+            &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+            &lt;Message&gt;
+                &lt;Header&gt;
+                    &lt;Sender&gt;Wordpress&lt;/Sender&gt; //Diegene die de message verstuurt.
+                    &lt;Timestamp&gt;2020-03-31T22:05:36&lt;/Timestamp&gt; //Wanneer de message is verstuurd.
+                    &lt;Action&gt;CREATE&lt;/Action&gt;//Kan CREATE, READ, UPDATE of DELETE zijn. 
+                &lt;/Header&gt;
+                &lt;Body&gt;
+                    &lt;Voornaam&gt;Zico&lt;/Voornaam&gt;
+                    &lt;Achternaam&gt;Van Ongeval&lt;/Achternaam&gt;
+                    &lt;Email&gt;zico.van.ongeval@student.ehb.be&lt;/Email&gt;
+                    &lt;Adres&gt;
+                        &lt;Straat&gt;Sint-Rocusstraat&lt;/Straat&gt;
+                        &lt;Huisnummer&gt;52&lt;/Huisnummer&gt;
+                        &lt;Stad&gt;Halle&lt;/Stad&gt;
+                        &lt;Postcode&gt;1500&lt;/Postcode&gt;
+                    &lt;/Adres&gt;
+                    &lt;Tel&gt;0401010101&lt;/Tel&gt;
+                    &lt;isVerified>false&lt;/isVerified&gt;
+                &lt;/Body&gt;
+            &lt;/Message&gt;
+         </code>
+        </pre>
+
+        <img src="registratie-stap-1.PNG" class="rabbit-img" alt="regitratie rabbitmq stap 1">
+
+            <h6 id="registratie-stap-2">Stap 2: De UUID module genereert een unieke id en verstuurt een message naar
+                alle modules met de user data + de UUID.
+                Alle data wordt weggeschreven in de database van de module, behalve de UUID.
+            </h6>
+
+            <pre>
+        <code class="hljs xml">
+        &lt;!--Version 2.0--&gt;
+            &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+            &lt;Message&gt;
+                &lt;Header&gt;
+                    &lt;Sender&gt;UUID&lt;/Sender&gt; //Diegene die de message verstuurt.
+                    &lt;Timestamp&gt;2020-03-31T22:07:36&lt;/Timestamp&gt; //Wanneer de message is verstuurd.
+                    &lt;Action&gt;CREATE&lt;/Action&gt;//Kan CREATE, READ, UPDATE of DELETE zijn.
+                &lt;/Header&gt;
+                &lt;Body&gt;
+                    &lt;UUID&gt;123e4567-e89b-12d3-a456-426655440000&lt;/UUID&gt; //Unieke identifier gegenereerd door de UUID module.
+                    &lt;Voornaam&gt;Zico&lt;/Voornaam&gt;
+                    &lt;Achternaam&gt;Van Ongeval&lt;/Achternaam&gt;
+                    &lt;Email&gt;zico.van.ongeval@student.ehb.be&lt;/Email&gt;
+                    &lt;Adres&gt;
+                        &lt;Straat&gt;Sint-Rochusstraat&lt;/Straat&gt;
+                        &lt;Huisnummer&gt;52&lt;/Huisnummer&gt;
+                        &lt;Stad&gt;Halle&lt;/Stad&gt;
+                        &lt;Postcode&gt;1500&lt;/Postcode&gt;
+                    &lt;/Adres&gt;
+                    &lt;Tel&gt;0401010101&lt;/Tel&gt;
+                    &lt;isVerified&gt;false&lt;/isVerified&gt;
+                &lt;/Body&gt;
+            &lt;/Message&gt;
+         </code>
+        </pre>
+
+        <img src="registratie-stap-2.PNG" class="rabbit-img" alt="regitratie rabbitmq stap 2">
+            <h6 id="registratie-stap-3">Stap 3: Elke module gebruikt de UUID uit voorgaande message om een message te
+                versturen naar de UUID module met de id van de module zelf.
+                zodat de UUID tabel de id's van elk syteem voor 1 bepaalde user kan bijhouden.
+            </h6>
+            <pre>
+        <code class="hljs xml">
+        &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+        &lt;Message&gt;
+            &lt;Header&gt;
+                &lt;Sender&gt;Salesforce&lt;/Sender&gt; //Diegene die de message verstuurt.
+                &lt;Timestamp&gt;2020-03-31T22:08:36&lt;/Timestamp&gt; //Wanneer de message is verstuurd.
+            &lt;/Header&gt;
+            &lt;Body&gt;
+                &lt;UUID&gt;123e4567-e89b-12d3-a456-426655440000&lt;/UUID&gt; //Unieke identifier gegenereerd door de UUID module.
+                &lt;id&gt;1&lt;/id&gt; //Dit is de id uit je softwarepakket.
+            &lt;/Body&gt;
+        &lt;/Message&gt;
+    </code>
+
+</pre>
+<img src="registratie-stap-3.PNG" class="rabbit-img" alt="regitratie rabbitmq stap 3">
+<h6>Update: </h6>
+
+<pre>
+    <code class="hljs xml">
+    &lt;!--Version 2.0--&gt;
+        &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+        &lt;Message&gt;
+            &lt;Header&gt;
+                &lt;Sender&gt;Wordpress&lt;/Sender&gt; //Diegene die de message verstuurt.
+                &lt;Timestamp&gt;2020-03-31T22:05:36&lt;/Timestamp&gt; //Wanneer de message is verstuurd.
+                &lt;Action&gt;UPDATE&lt;/Action&gt;//Kan CREATE, READ, UPDATE of DELETE zijn. 
+            &lt;/Header&gt;
+            &lt;Body&gt;
+                &lt;Id&gt;1&lt;/Id&gt; //Id uit systeem
+                &lt;Voornaam&gt;Zico&lt;/Voornaam&gt;
+                &lt;Achternaam&gt;Van Ongeval&lt;/Achternaam&gt;
+                &lt;Email&gt;zico.van.ongeval@student.ehb.be&lt;/Email&gt;
+                &lt;Adres&gt;
+                    &lt;Straat&gt;Sint-Rocusstraat&lt;/Straat&gt;
+                    &lt;Huisnummer&gt;52&lt;/Huisnummer&gt;
+                    &lt;Stad&gt;Halle&lt;/Stad&gt;
+                    &lt;Postcode&gt;1500&lt;/Postcode&gt;
+                &lt;/Adres&gt;
+                &lt;Tel&gt;0401010101&lt;/Tel&gt;
+                &lt;isVerified>false&lt;/isVerified&gt;
+            &lt;/Body&gt;
+        &lt;/Message&gt;
+     </code>
+    </pre>
+
+            <h4 id="activity-registratie">Activity diagram registratie: </h4>
+
+            <img src="Activity_Diagram_user_registration.png" alt="activity diagram van de registratieflow"
+                id="activity-registratie-img">
+
+            <h2 id="heartbeat">Heartbeat: </h2>
+            <h6>Elke module dient elke seconde een heartbeat te versturen naar de Controlroom in volgend formaat: </h6>
+            <pre>
+    <code class="hljs xml">
+        &lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+        &lt;Heartbeat&gt;
+            &lt;Header&gt;
+                &lt;Sender&gt;Odoo&lt;/Sender&gt;
+                &lt;Timestamp&gt;2020-03-31T22:07:36&lt;/Timestamp&gt;
+            &lt;/Header&gt;
+        &lt;/Heartbeat&gt;
+    </code>
+    </pre>
+
+<img src="heartbeats.PNG" class="rabbit-img" alt="heartbeat rabbitmq">
+
+            <h2 id="timestamps">Timestamps: </h2>
+            <h6>Timestamps worden altijd in volgend formaat uitgedrukt.</h6>
+            <pre>
+    <code class="hljs xml">
+        &lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+        &lt;Timestamp&gt;YYYY-MM-DDThh:mm:ss;&lt;/Timestamp&gt; //Wanneer de message is verstuurd.
+        VB:
+        &lt;Timestamp&gt;2020-03-31T22:05:36;&lt;/Timestamp&gt; //Wanneer de message is verstuurd.    
+    </code>
+    </pre>
+
+            <h2 id="logs">Logs: </h2>
+            <h6>Logs worden altijd in volgend formaat uitgedrukt.</h6>
+
+            <pre>
+    <code class="hljs xml">
+        &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+        &lt;Log&gt;
+            &lt;Header&gt;
+                &lt;Sender>wordpress&lt;/Sender&gt;
+                &lt;Timestamp&gt;2020-03-30T09:30:10&lt;/Timestamp&gt;
+            &lt;/Header&gt;
+            &lt;Body&gt;
+                &lt;LogType&gt;WARN&lt;/LogType&gt; //Kan INFO, WARN of ERROR zijn. 
+                &lt;Title&gt;title&lt;/Title&gt;
+                &lt;Description>desc&lt;/Description&gt;
+            &lt;/Body&gt;  
+        &lt;/Log&gt;
+</code>
+</pre>
+
+            <h2 id="XSD">XSD validatie scripts: </h2>
+            
+            <h4>Registratie: </h4>
+            <h6 id="registratie-xsd-1">Stap 1:</h6>
+    <pre>
+    <code class="hljs xml">
+        &lt;!--Version 2.1--&gt;
+        &lt;xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+        &lt;xs:element name="Message"&gt;
+            &lt;xs:complexType&gt;
+                &lt;xs:sequence&gt;
+                    &lt;xs:element name="Header"&gt;
+                        &lt;xs:complexType mixed="true"&gt;
+                            &lt;xs:sequence&gt;
+                                &lt;xs:element type="xs:string" name="Sender"/&gt;
+                                &lt;xs:element type="xs:string" name="Timestamp"/&gt;
+                                &lt;xs:element name="Action"&gt;
+                                    &lt;xs:simpleType&gt;
+                                        &lt;xs:restriction base="xs:string"&gt;
+                                            &lt;xs:enumeration value="CREATE"/&gt;
+                                            &lt;xs:enumeration value="READ"/&gt;
+                                            &lt;xs:enumeration value="UPDATE"/&gt;
+                                            &lt;xs:enumeration value="DELETE"/&gt;
+                                        &lt;/xs:restriction&gt;
+                                    &lt;/xs:simpleType&gt;
+                                &lt;/xs:element&gt;
+                            &lt;/xs:sequence&gt;
+                        &lt;/xs:complexType&gt;
+                    &lt;/xs:element&gt;
+                    &lt;xs:element name="Body"&gt;
+                        &lt;xs:complexType&gt;
+                            &lt;xs:sequence&gt;
+                                &lt;xs:element name="Id" type="xs:int" minOccurs="0" maxOccurs="1" /&gt;
+                                &lt;xs:element type="xs:string" name="Voornaam"/&gt;
+                                &lt;xs:element type="xs:string" name="Achternaam"/&gt;
+                                &lt;xs:element type="xs:string" name="Email"/&gt;
+                                &lt;xs:element name="Adres"&gt;
+                                    &lt;xs:complexType&gt;
+                                        &lt;xs:sequence&gt;
+                                            &lt;xs:element type="xs:string" name="Straat"/&gt;
+                                            &lt;xs:element type="xs:string" name="Huisnummer"/&gt;
+                                            &lt;xs:element type="xs:string" name="Stad"/&gt;
+                                            &lt;xs:element type="xs:short" name="Postcode"/&gt;
+                                        &lt;/xs:sequence&gt;
+                                    &lt;/xs:complexType&gt;
+                                &lt;/xs:element&gt;
+                                &lt;xs:element type="xs:string" name="Tel"/&gt;
+                                &lt;xs:element type="xs:string" name="isVerified"/&gt;
+                            &lt;/xs:sequence&gt;
+                        &lt;/xs:complexType&gt;
+                    &lt;/xs:element&gt;
+                &lt;/xs:sequence&gt;
+            &lt;/xs:complexType&gt;
+        &lt;/xs:element&gt;
+    &lt;/xs:schema&gt;
+    </code>
+    </pre>
+            <h6 id="registratie-xsd-3">Stap 3: </h6>
+            <pre>
+    <code class="hljs xml">
+        &lt;?xml version="1.0" encoding="utf-8"?&gt;
+        &lt;xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+          &lt;xs:element name="Message"&gt;
+            &lt;xs:complexType mixed="true"&gt;
+              &lt;xs:sequence&gt;
+                &lt;xs:element name="Header"&gt;
+                  &lt;xs:complexType mixed="true"&gt;
+                    &lt;xs:sequence&gt;
+                      &lt;xs:element name="Sender" type="xs:string" /&gt;
+                      &lt;xs:element name="Timestamp" type="xs:dateTime" /&gt;
+                    &lt;/xs:sequence&gt;
+                  &lt;/xs:complexType&gt;
+                &lt;/xs:element&gt;
+                &lt;xs:element name="Body"&gt;
+                  &lt;xs:complexType mixed="true"&gt;
+                    &lt;xs:sequence&gt;
+                      &lt;xs:element name="UUID" type="xs:string" /&gt;
+                      &lt;xs:element name="id" type="xs:integer" /&gt;
+                    &lt;/xs:sequence&gt;
+                  &lt;/xs:complexType&gt;
+                &lt;/xs:element&gt;
+              &lt;/xs:sequence&gt;
+            &gt;/xs:complexType&gt;
+          &lt;/xs:element&gt;
+        &lt;/xs:schema&gt;              
+    </code>
+    </pre>
+
+        <h4 id="heartbeat-xsd">Heartbeats: </h4>
+<pre>
+    <code class="hljs xml">
+        &lt;?xml version="1.0" encoding="UTF-8" ?&gt; 
+        &lt;xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt; 
+            &lt;xs:element name="Heartbeat"&gt; 
+                &lt;xs:complexType mixed="true"&gt; 
+                    &lt;xs:sequence&gt; 
+                        &lt;xs:element name="Header"&gt; 
+                            &lt;xs:complexType mixed="true"&gt; 
+                                &lt;xs:sequence&gt; 
+                                    &lt;xs:element type="xs:string" name="Sender"/&gt; 
+                                    &lt;xs:element type="xs:dateTime" name="Timestamp"/&gt; 
+                                &lt;/xs:sequence&gt; 
+                            &lt;/xs:complexType&gt; 
+                        &lt;/xs:element&gt; 
+                    &lt;/xs:sequence&gt; 
+                &lt;/xs:complexType&gt; 
+            &lt;/xs:element&gt; 
+        &lt;/xs:schema&gt; 
+    </code>
+ </pre>
+
+        <h4 id="logs-xsd">Logs: </h4>
+<pre>
+    <code class="hljs xml">
+        &lt;?xml version="1.0" encoding="UTF-8" ?&gt; 
+        &lt;xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt; 
+            &lt;xs:element name="Log"&gt; 
+                &lt;xs:complexType mixed="true"&gt; 
+                    &lt;xs:sequence&gt; 
+                        &lt;xs:element name="Header"&gt; 
+                            &lt;xs:complexType mixed="true"&gt; 
+                                &lt;xs:sequence&gt; 
+                                    &lt;xs:element type="xs:string" name="Sender"/&gt; 
+                                    &lt;xs:element type="xs:dateTime" name="Timestamp"/&gt; 
+                                &lt;/xs:sequence&gt; 
+                            &lt;/xs:complexType&gt; 
+                        &lt;/xs:element&gt; 
+                        &lt;xs:element name="Body"&gt; 
+                            &lt;xs:complexType mixed="true"&gt; 
+                                &lt;xs:sequence&gt; 
+                                    &lt;xs:element name="LogType"&gt; 
+                                        &lt;xs:simpleType&gt; 
+                                            &lt;xs:restriction base="xs:string"&gt; 
+                                                &lt;xs:enumeration value="INFO"/&gt; 
+                                                &lt;xs:enumeration value="WARN"/&gt; 
+                                                &lt;xs:enumeration value="ERROR"/&gt; 
+                                            &lt;/xs:restriction&gt; 
+                                        &lt;/xs:simpleType&gt; 
+                                    &lt;/xs:element&gt; 
+                                    &lt;xs:element type="xs:string" name="Title"/&gt; 
+                                    &lt;xs:element type="xs:string" name="Description"/&gt; 
+                                &lt;/xs:sequence&gt; 
+                            &lt;/xs:complexType&gt; 
+                        &lt;/xs:element&gt; 
+                    &lt;/xs:sequence&gt; 
+                &lt;/xs:complexType&gt; 
+            &lt;/xs:element&gt; 
+    </code>
+</pre>
+       
+        </div>
+
+
+
+
+    </div>
+
+
+
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="script.js"></script>
+    <script src="highlight.pack.js"></script>
+
+</body>
+
+</html>

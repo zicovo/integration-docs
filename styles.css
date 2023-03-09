@@ -1,0 +1,25 @@
+#titel{
+    padding-bottom: 40px;
+}
+
+.side-nav{
+    float: left;
+    width: 20%;
+    position: sticky;
+}
+
+.content{
+    float: left;    
+    width: 70%;
+}
+
+#activity-registratie-img{
+    width: 777px;
+    margin-bottom: 50px;
+}
+
+.rabbit-img{
+    width: 777px;
+    margin-bottom: 50px;
+
+}
